@@ -36,7 +36,6 @@ import (
 	"sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 	"sigs.k8s.io/kind/pkg/cluster/constants"
 
-	infrav1 "github.com/DanielXiao/cluster-api-provider-docker/api/v1alpha1"
 	"github.com/DanielXiao/cluster-api-provider-docker/pkg/container"
 	"github.com/DanielXiao/cluster-api-provider-docker/pkg/docker/types"
 	"github.com/DanielXiao/cluster-api-provider-docker/pkg/provisioning"
@@ -195,11 +194,11 @@ func (m *Machine) ContainerImage() string {
 }
 
 // Create creates a docker container hosting a Kubernetes node.
-func (m *Machine) Create(ctx context.Context, image string, role string, version *string, labels map[string]string, mounts []infrav1.Mount) error {
+func (m *Machine) Create(ctx context.Context, image string, role string, version *string, labels map[string]string, mounts []Mount) error {
 	log := ctrl.LoggerFrom(ctx)
 
 	if !hasDockerSocketMount(mounts) {
-		mounts = append(mounts, infrav1.Mount{
+		mounts = append(mounts, Mount{
 			ContainerPath: defaultDockerSocket,
 			HostPath:      defaultDockerSocket,
 		})
@@ -266,7 +265,7 @@ func (m *Machine) Create(ctx context.Context, image string, role string, version
 	return nil
 }
 
-func kindMounts(mounts []infrav1.Mount) []v1alpha4.Mount {
+func kindMounts(mounts []Mount) []v1alpha4.Mount {
 	if len(mounts) == 0 {
 		return nil
 	}
@@ -500,7 +499,7 @@ func logContainerDebugInfo(ctx context.Context, log logr.Logger, name string) {
 	log.Info("Got logs from the machine container", "output", strings.ReplaceAll(buffer.String(), "\\n", "\n"))
 }
 
-func hasDockerSocketMount(mounts []infrav1.Mount) bool {
+func hasDockerSocketMount(mounts []Mount) bool {
 	if len(mounts) == 0 {
 		return false
 	}
@@ -512,4 +511,20 @@ func hasDockerSocketMount(mounts []infrav1.Mount) bool {
 	}
 
 	return false
+}
+
+// Mount specifies a host volume to mount into a container.
+// This is a simplified version of kind v1alpha4.Mount types.
+type Mount struct {
+	// Path of the mount within the container.
+	ContainerPath string `json:"containerPath,omitempty"`
+
+	// Path of the mount on the host. If the hostPath doesn't exist, then runtimes
+	// should report error. If the hostpath is a symbolic link, runtimes should
+	// follow the symlink and mount the real destination to container.
+	HostPath string `json:"hostPath,omitempty"`
+
+	// If set, the mount is read-only.
+	// +optional
+	Readonly bool `json:"readOnly,omitempty"`
 }
