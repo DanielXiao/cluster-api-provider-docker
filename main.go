@@ -21,6 +21,8 @@ import (
 	"github.com/DanielXiao/cluster-api-provider-docker/pkg/container"
 	"os"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/cluster-api/controllers/remote"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -99,6 +101,36 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Set our runtime client into the context for later use
+	runtimeClient, err = container.NewDockerClient()
+	if err != nil {
+		setupLog.Error(err, "unable to establish container runtime connection", "controller", "reconciler")
+		os.Exit(1)
+	}
+
+	log := ctrl.Log.WithName("remote").WithName("ClusterCacheTracker")
+	tracker, err := remote.NewClusterCacheTracker(
+		mgr,
+		remote.ClusterCacheTrackerOptions{
+			Log:     &log,
+			Indexes: remote.DefaultIndexes,
+		},
+	)
+	if err != nil {
+		setupLog.Error(err, "unable to create cluster cache tracker")
+		os.Exit(1)
+	}
+
+	if err := (&remote.ClusterCacheReconciler{
+		Client:  mgr.GetClient(),
+		Tracker: tracker,
+	}).SetupWithManager(ctx, mgr, controller.Options{
+		MaxConcurrentReconciles: 10,
+	}); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ClusterCacheReconciler")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.DockerClusterReconciler{
 		Client:           mgr.GetClient(),
 		Scheme:           mgr.GetScheme(),
@@ -108,8 +140,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.DockerMachineReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:           mgr.GetClient(),
+		Scheme:           mgr.GetScheme(),
+		ContainerRuntime: runtimeClient,
+		Tracker:          tracker,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "DockerMachine")
 		os.Exit(1)
