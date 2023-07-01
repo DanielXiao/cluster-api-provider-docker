@@ -18,11 +18,13 @@ package main
 
 import (
 	"flag"
-	"github.com/DanielXiao/cluster-api-provider-docker/pkg/container"
 	"os"
+
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/cluster-api/controllers/remote"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+
+	"github.com/DanielXiao/cluster-api-provider-docker/pkg/container"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
