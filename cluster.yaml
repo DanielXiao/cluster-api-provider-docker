@@ -2,7 +2,7 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   labels:
-    cni: flannel
+    cni: antrea
   name: kubecontest
   namespace: default
 spec:
@@ -117,12 +117,12 @@ spec:
 apiVersion: addons.cluster.x-k8s.io/v1alpha3
 kind: ClusterResourceSet
 metadata:
-  name: flannel-crs
+  name: antrea-crs
   namespace: default
 spec:
   clusterSelector:
     matchLabels:
-      cni: flannel
+      cni: antrea
   resources:
   - kind: ConfigMap
-    name: flannel-crs-configmap
+    name: antrea-crs-configmap
