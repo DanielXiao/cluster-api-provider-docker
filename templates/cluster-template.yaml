@@ -3,7 +3,7 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   labels:
-    cni: antrea # Apply antrea CNI
+    cni: "${CNI_NAME}" # Apply CNI
   name: "${CLUSTER_NAME}"
 spec:
   clusterNetwork:
@@ -113,12 +113,12 @@ spec:
 apiVersion: addons.cluster.x-k8s.io/v1alpha3
 kind: ClusterResourceSet
 metadata:
-  name: antrea-crs
+  name: "${CNI_NAME}-crs"
   namespace: default
 spec:
   clusterSelector:
     matchLabels:
-      cni: antrea
+      cni: "${CNI_NAME}"
   resources:
   - kind: ConfigMap
-    name: antrea-crs-configmap
+    name: "${CNI_NAME}-crs-configmap"

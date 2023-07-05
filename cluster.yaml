@@ -2,7 +2,7 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   labels:
-    cni: antrea
+    cni: flannel
   name: kubecontest
   namespace: default
 spec:
@@ -56,7 +56,7 @@ spec:
       kind: DockerMachineTemplate
       name: kubecontest-control-plane
   replicas: 1
-  version: v1.26.0
+  version: v1.26.3
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
 kind: DockerMachineTemplate
@@ -89,7 +89,7 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
         kind: DockerMachineTemplate
         name: kubecontest-md-0
-      version: v1.26.0
+      version: v1.26.3
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
 kind: DockerMachineTemplate
@@ -117,12 +117,12 @@ spec:
 apiVersion: addons.cluster.x-k8s.io/v1alpha3
 kind: ClusterResourceSet
 metadata:
-  name: antrea-crs
+  name: flannel-crs
   namespace: default
 spec:
   clusterSelector:
     matchLabels:
-      cni: antrea
+      cni: flannel
   resources:
   - kind: ConfigMap
-    name: antrea-crs-configmap
+    name: flannel-crs-configmap
