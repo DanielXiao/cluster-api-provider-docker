@@ -103,13 +103,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set our runtime client into the context for later use
-	runtimeClient, err = container.NewDockerClient()
-	if err != nil {
-		setupLog.Error(err, "unable to establish container runtime connection", "controller", "reconciler")
-		os.Exit(1)
-	}
-
 	log := ctrl.Log.WithName("remote").WithName("ClusterCacheTracker")
 	tracker, err := remote.NewClusterCacheTracker(
 		mgr,
